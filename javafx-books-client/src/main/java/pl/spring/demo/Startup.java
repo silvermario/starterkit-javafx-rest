@@ -23,7 +23,6 @@ public class Startup extends Application {
 	/**
 	 * @see {@link javafx.application.Application#start(Stage)}
 	 */
-	@SuppressWarnings("restriction")
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		/*

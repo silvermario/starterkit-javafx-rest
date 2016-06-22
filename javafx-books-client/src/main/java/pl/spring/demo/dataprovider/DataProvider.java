@@ -30,6 +30,8 @@ public interface DataProvider {
 	Collection<BookEntity> findAllBooks();
 	
 	Collection<BookEntity> findBooksByTitle(String title);
+
+	Collection<BookEntity> findBooksByTitleDummyData(String title);
 	
 	
 	

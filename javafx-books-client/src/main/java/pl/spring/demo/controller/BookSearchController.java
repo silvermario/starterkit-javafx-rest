@@ -4,10 +4,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -28,10 +28,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import pl.spring.demo.dataprovider.DataProvider;
 import pl.spring.demo.dataprovider.data.SexVO;
+import pl.spring.demo.model.AuthorEntity;
 import pl.spring.demo.model.BookEntity;
 import pl.spring.demo.model.BookSearch;
 
@@ -94,7 +94,7 @@ public class BookSearchController {
 	private TableColumn<BookEntity, String> titleColumn;
 
 	@FXML
-	private TableColumn<BookEntity, String> authorsColumn;
+	private TableColumn<BookEntity, Set<AuthorEntity>> authorsColumn;
 
 	private final DataProvider dataProvider = DataProvider.INSTANCE;
 
@@ -148,6 +148,7 @@ public class BookSearchController {
 		 */
 		idColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getId()));
 		titleColumn.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getTitle()));
+		authorsColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getAuthors()));
 		// titleColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
 		/*
@@ -196,7 +197,7 @@ public class BookSearchController {
 					public void handle(ActionEvent event) {
 						LOG.debug(resultTable.getSelectionModel().getSelectedItem().toString());
 						showMessageBox("Book Deleted!");
-						//resultTable.getItems().remove(row.getItem());
+						resultTable.getItems().remove(row.getItem());
 					}
 				});
 				contextMenu.getItems().add(removeMenuItem);
@@ -223,13 +224,6 @@ public class BookSearchController {
 		searchButtonAction();
 	}
 
-	/**
-	 * This implementation is correct.
-	 * <p>
-	 * The {@link DataProvider#findPersons(String, SexVO)} call is executed in a
-	 * background thread.
-	 * </p>
-	 */
 	private void searchButtonAction() {
 		/*
 		 * Use task to execute the potentially long running call in background
@@ -245,10 +239,14 @@ public class BookSearchController {
 			protected Collection<BookEntity> call() throws Exception {
 				LOG.debug("call() called");
 
-				/*
-				 * Get the data.
-				 */
-				Collection<BookEntity> result = dataProvider.findBooksByTitle(model.getTitle());
+				Collection<BookEntity> result;
+				
+				if(model.getTitle() == "" || model.getTitle() == null) {
+					result = dataProvider.findAllBooks();
+				} else {
+					result = dataProvider.findBooksByTitle(model.getTitle());
+				}
+				
 				LOG.debug("model.getTitle(): " + model.getTitle());
 				/*
 				 * Value returned from this method is stored as a result of task
