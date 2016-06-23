@@ -133,6 +133,7 @@ public class BookSearchController {
 
 		idColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getId()));
 		titleColumn.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getTitle()));
+		// REV: kod do usuniecia
 		/*
 		 * authorsColumn.setCellValueFactory(cellData -> new
 		 * ReadOnlyStringWrapper(
@@ -172,6 +173,7 @@ public class BookSearchController {
 		/*
 		 * Delete action menu context
 		 */
+		// REV: fajnie zrobione
 		resultTable.setRowFactory(new Callback<TableView<BookEntity>, TableRow<BookEntity>>() {
 			@Override
 			public TableRow<BookEntity> call(TableView<BookEntity> tableView) {
@@ -186,6 +188,7 @@ public class BookSearchController {
 						try {
 							deleteBook(selectedBook, row);
 						} catch (Exception e) {
+							// REV: deleteBook nie rzuca wyjatku, mimo ze go deklaruje
 							e.printStackTrace();
 						}
 					}
@@ -193,6 +196,7 @@ public class BookSearchController {
 				contextMenu.getItems().add(removeMenuItem);
 				// Set context menu on row, but use a binding to make it only
 				// show for non-empty rows:
+				// REV: niezle kurde :)
 				row.contextMenuProperty()
 						.bind(Bindings.when(row.emptyProperty()).then((ContextMenu) null).otherwise(contextMenu));
 				return row;
@@ -235,6 +239,7 @@ public class BookSearchController {
 					return result;
 
 				} catch (Exception e) {
+					// REV: obsluga wyjatkow - Task.failed()
 					LOG.debug( e);
 					throw new Exception();
 					// return null;
@@ -260,6 +265,7 @@ public class BookSearchController {
 				 */
 				if(result == null) {
 					model.setResult(null);
+					// REV: to raczej nie jest konieczne
 					emptyResultTable();
 				} else {
 					model.setResult(new ArrayList<BookEntity>(result));
@@ -276,6 +282,7 @@ public class BookSearchController {
 
 		new Thread(backgroundTask).start();
 
+		// REV: nalezaloby to zrobic przed odpaleniem tasku
 		exceptionHandling(backgroundTask);
 	}
 
@@ -304,6 +311,7 @@ public class BookSearchController {
 		};
 		new Thread(backgroundTask).start();
 
+		// REV: j.w.
 		exceptionHandling(backgroundTask);
 
 	}
@@ -340,6 +348,7 @@ public class BookSearchController {
 		};
 		new Thread(backgroundTask).start();
 
+		// REV: j.w.
 		exceptionHandling(backgroundTask);
 
 	}
@@ -363,7 +372,9 @@ public class BookSearchController {
 		taskName.exceptionProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue != null) {
 				Exception ex = (Exception) newValue;
+				// REV: printStackTrace to zlo
 				ex.printStackTrace();
+				// REV: przechwytujesz wszystkie wyjatki, wiec to nie zawsze jest problem z serwerem
 				showMessageBox("Server connection problem!");
 			}
 		});

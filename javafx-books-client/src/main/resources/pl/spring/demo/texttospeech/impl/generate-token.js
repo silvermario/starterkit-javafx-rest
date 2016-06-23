@@ -1,3 +1,4 @@
+// REV: do usuniecia
 var window = {};
 
 var cM = function(a) {

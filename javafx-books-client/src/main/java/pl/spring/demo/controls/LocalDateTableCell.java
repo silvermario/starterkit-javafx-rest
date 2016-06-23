@@ -16,6 +16,7 @@ import javafx.scene.text.FontWeight;
  * @param <T>
  *            The type of the TableView generic type
  */
+// REV: ta klasa nie jest uzywana
 public class LocalDateTableCell<T> extends TableCell<T, LocalDate> {
 
 	private DateTimeFormatter dateFormat;

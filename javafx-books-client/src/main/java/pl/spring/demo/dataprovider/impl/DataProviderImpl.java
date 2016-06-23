@@ -31,7 +31,10 @@ public class DataProviderImpl implements DataProvider {
 	private Collection<BookEntity> books = new ArrayList<>();
 	private ObjectMapper objectMapper = new ObjectMapper();
 
+	// REV: adres serwera powinien byc pobrany z konfiguracji
 	private static final String API_URL = "http://localhost:8080/api";
+	
+	// REV: static'i to zly pomysl w tej sytuacji
 	private static HttpURLConnection conn;
 	private static BufferedReader br;
 
@@ -44,15 +47,20 @@ public class DataProviderImpl implements DataProvider {
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			if (conn.getResponseCode() != 200) {
+				// REV: Trzeba rozroznic pusty wynik od bledu 
 				return null;
 			}
 			br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
 			String jsonData = br.readLine();
+			// REV: nie zamykasz polaczenia przy bledzie
 			conn.disconnect();
 			return jsonData;
 		} catch (IOException e) {
+			// REV: bleda nalezy logowac na levelu ERROR i przekazac wyjatek
 			LOG.debug("IOException" + e);
+			// REV: printStackTrace to zlo
 			e.printStackTrace();
+			// REV: dlaczego MalformedURLException? exception chaining
 			throw new MalformedURLException();
 			// return null;
 		}
@@ -60,6 +68,7 @@ public class DataProviderImpl implements DataProvider {
 
 	private static HttpURLConnection prepareConnection(String myUrl, String method) throws IOException {
 
+		// REV: lepiej uzyc frameworka do RESTow
 		URL url = new URL(myUrl);
 
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -85,6 +94,7 @@ public class DataProviderImpl implements DataProvider {
 				books = Arrays.asList(objectMapper.readValue(jsonDataResponse, BookEntity[].class));
 			}
 		} catch (Exception e) {
+			// REV: j.w.
 			LOG.debug("IOException" + e);
 			e.printStackTrace();
 			throw new Exception();
@@ -104,6 +114,7 @@ public class DataProviderImpl implements DataProvider {
 				books = Arrays.asList(objectMapper.readValue(jsonDataResponse, BookEntity[].class));
 			}
 		} catch (IOException e) {
+			// REV: j.w.
 			LOG.debug("IOException" + e);
 			throw new Exception();
 		}
@@ -124,8 +135,10 @@ public class DataProviderImpl implements DataProvider {
 		int HttpResult = conn.getResponseCode();
 		if (HttpResult != HttpURLConnection.HTTP_CREATED) {
 			LOG.debug("HTTP response code: " + HttpResult);
+			// REV: zawsze ustawiaj message w wyjatku, dlaczego IOException?
 			throw new IOException();
 		}
+		// REV: j.w.
 		conn.disconnect();
 
 	}
@@ -148,8 +161,10 @@ public class DataProviderImpl implements DataProvider {
 		int HttpResult = conn.getResponseCode();
 		if (HttpResult != HttpURLConnection.HTTP_OK) {
 			LOG.debug("HTTP response code: " + HttpResult);
+			// REV: j.w.
 			throw new IOException();
 		}
+		// REV: j.w.
 		conn.disconnect();
 
 	}
