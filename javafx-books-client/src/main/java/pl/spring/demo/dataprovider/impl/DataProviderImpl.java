@@ -1,9 +1,7 @@
 package pl.spring.demo.dataprovider.impl;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -12,16 +10,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.spring.demo.dataprovider.DataProvider;
-import pl.spring.demo.model.AuthorEntity;
 import pl.spring.demo.model.BookEntity;
 
 /**

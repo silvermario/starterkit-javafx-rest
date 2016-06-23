@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import pl.spring.demo.model.BookEntity;
 import pl.spring.demo.service.BookService;
-import pl.spring.demo.to.BookTo;
 
 @RestController
 @RequestMapping("/api")
