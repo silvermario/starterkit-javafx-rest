@@ -47,8 +47,11 @@ public class AuthorEntity {
 
 	@Override
 	public String toString() {
-		return "AuthorEntity [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+		return  firstName + " " + lastName;
 	}
     
+	public String toStringSimple() {
+		return  firstName + " " + lastName;
+	}
     
 }

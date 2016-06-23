@@ -51,30 +51,13 @@ public class BooksController {
     }
 
     @RequestMapping(
-    		value = "/books2/title/{title}",
-    		method = RequestMethod.GET,
-    		produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BookTo>> getBooks2(@PathVariable("title") String title) {
-    	
-    	List<BookTo> books = bookService.findBooksByTitle(title);
-    	if (books == null) {
-    		return new ResponseEntity<List<BookTo>>(HttpStatus.NOT_FOUND);
-    	}
-    	
-    	return new ResponseEntity<List<BookTo>>(books, HttpStatus.OK);
-    }
-    /**
-     * Creates new book 
-     * @param book
-     * @return
-     */
-    @RequestMapping(
     		value = "/books",
     		method = RequestMethod.POST,
     		consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> createBook(@RequestBody BookTo book) {
-		if (book.getId() != null && !bookService.findBookById(book.getId()).isEmpty()) {
+	public ResponseEntity<Void> createBook2(@RequestBody BookEntity book) {
+		
+    	if (book.getId() != null && !bookService.findBookById(book.getId()).isEmpty()) {
 			return new ResponseEntity<Void>(HttpStatus.CONFLICT);
 		}
 		bookService.saveBook(book);
@@ -82,25 +65,16 @@ public class BooksController {
 	}
 
     @RequestMapping(
-    		value = "/books2",
-    		method = RequestMethod.POST,
-    		consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> createBook2(@RequestBody BookEntity book) {
-		if (book.getId() != null && !bookService.findBookById(book.getId()).isEmpty()) {
-			return new ResponseEntity<Void>(HttpStatus.CONFLICT);
+            value = "/books/{id}",
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<BookEntity> deleteBook(@PathVariable("id") Long id,
+            @RequestBody BookEntity book) {
+    	
+    	if (id == null || bookService.findBookById(id).isEmpty()) {
+			return new ResponseEntity<BookEntity>(HttpStatus.NOT_FOUND);
 		}
-		bookService.saveBook2(book);
-		return new ResponseEntity<Void>(HttpStatus.CREATED);
-	}
-	/*@RequestMapping(value = "/books", method = RequestMethod.PUT)
-	public ResponseEntity<Void> updateBook(@RequestBody BookTo book) {
-		if (book.getId() == null || bookService.findBookById(book.getId()).isEmpty()) {
-			return new ResponseEntity<Void>(HttpStatus.CONFLICT);
-		}
-		bookService.saveBook(book);
-		return new ResponseEntity<Void>(HttpStatus.CREATED);
-	}*/
-
-    
+    	bookService.deleteBook(id);
+        return new ResponseEntity<BookEntity>(HttpStatus.OK);
+    }
 }

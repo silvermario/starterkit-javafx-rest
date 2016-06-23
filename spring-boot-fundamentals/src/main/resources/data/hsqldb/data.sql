@@ -1,5 +1,5 @@
-INSERT INTO Greeting (text) VALUES ('Hello World!');
-INSERT INTO Greeting (text) VALUES ('Hola Mundo!');
+--INSERT INTO Greeting (text) VALUES ('Hello World!');
+--INSERT INTO Greeting (text) VALUES ('Hola Mundo!');
 
 --insert into library (id, name) values (1, 'Biblioteka Wroclawska');
 --insert into library (id, name) values (2, 'Narodowa Biblioteka');
@@ -12,12 +12,15 @@ INSERT INTO Greeting (text) VALUES ('Hola Mundo!');
 insert into book (id, title) values (1, 'Pierwsza ksiazka');
 insert into book (id, title) values (2, 'Druga ksiazka');
 insert into book (id, title) values (3, 'Trzecia ksiazka');
+insert into book (id, title) values (4, 'Encyklopedia');
 
 insert into author (id, firstName, lastName) values (7, 'Jan', 'Kowalski');
 insert into author (id, firstName, lastName) values (8, 'Zbigniew', 'Nowak');
 insert into author (id, firstName, lastName) values (9, 'Janusz', 'Jankowski');
+insert into author (id, firstName, lastName) values (10, 'Stefan', 'Korecki');
 
 insert into book_author(book_id, author_id) values (1, 7);
 insert into book_author(book_id, author_id) values (1, 8);
 insert into book_author(book_id, author_id) values (2, 8);
 insert into book_author(book_id, author_id) values (3, 9);
+insert into book_author(book_id, author_id) values (3, 10);

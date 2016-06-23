@@ -3,6 +3,7 @@ package pl.spring.demo.controller;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -24,13 +25,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import pl.spring.demo.dataprovider.DataProvider;
-import pl.spring.demo.dataprovider.data.SexVO;
 import pl.spring.demo.model.AuthorEntity;
 import pl.spring.demo.model.BookEntity;
 import pl.spring.demo.model.BookSearch;
@@ -76,7 +77,10 @@ public class BookSearchController {
 	private TextField newTitle;
 
 	@FXML
-	private TextField newAuthors;
+	private TextField newAuthorFirstName;
+
+	@FXML
+	private TextField newAuthorLastName;
 
 	@FXML
 	private Button searchButton;
@@ -100,25 +104,10 @@ public class BookSearchController {
 
 	private final BookSearch model = new BookSearch();
 
-	/**
-	 * The JavaFX runtime instantiates this controller.
-	 * <p>
-	 * The @FXML annotated fields are not yet initialized at this point.
-	 * </p>
-	 */
 	public BookSearchController() {
 		LOG.debug("Constructor: titleField = " + titleField);
 	}
 
-	/**
-	 * The JavaFX runtime calls this method after loading the FXML file.
-	 * <p>
-	 * The @FXML annotated fields are initialized at this point.
-	 * </p>
-	 * <p>
-	 * NOTE: The method name must be {@code initialize}.
-	 * </p>
-	 */
 	@FXML
 	private void initialize() {
 		LOG.debug("initialize(): titleField = " + titleField);
@@ -137,55 +126,54 @@ public class BookSearchController {
 		 * Make the add book button inactive when both fields are empty
 		 */
 		addBookButton.disableProperty()
-				.bind(Bindings.isEmpty(newTitle.textProperty()).or(Bindings.isEmpty(newAuthors.textProperty())));
+				.bind(Bindings.isEmpty(newTitle.textProperty()).or(Bindings.isEmpty(newAuthorFirstName.textProperty()))
+						.or(Bindings.isEmpty(newAuthorLastName.textProperty())));
 
 	}
 
 	private void initializeResultTable() {
-		/*
-		 * Define what properties of BookEntity will be displayed in different
-		 * columns.
-		 */
+
 		idColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getId()));
 		titleColumn.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getTitle()));
+		/*
+		 * authorsColumn.setCellValueFactory(cellData -> new
+		 * ReadOnlyStringWrapper(
+		 * cellData.getValue().getAuthors().iterator().next().getFirstName() +
+		 * " " +
+		 * cellData.getValue().getAuthors().iterator().next().getLastName()));
+		 */
 		authorsColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getAuthors()));
-		// titleColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+		authorsColumn.setCellFactory(column -> {
+			return new TableCell<BookEntity, Set<AuthorEntity>>() {
+				@Override
+				protected void updateItem(Set<AuthorEntity> authorsSet, boolean empty) {
+
+					super.updateItem(authorsSet, empty);
+					StringBuilder authorsStringBuilder = new StringBuilder();
+
+					if (empty) {
+						setText(null);
+						setStyle("");
+
+					} else {
+
+						for (AuthorEntity author : authorsSet) {
+							authorsStringBuilder.append(author.getFirstName() + " " + author.getLastName() + " ");
+						}
+						setText(authorsStringBuilder.toString());
+					}
+				}
+			};
+		});
 
 		/*
 		 * Show specific text for an empty table. This can also be done in FXML.
 		 */
-		resultTable.setPlaceholder(new Label(resources.getString("table.emptyText")));
+		emptyResultTable();
 
 		/*
-		 * When table's row gets selected say given person's name.
+		 * Delete action menu context
 		 */
-		resultTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<BookEntity>() {
-
-			@Override
-			public void changed(ObservableValue<? extends BookEntity> observable, BookEntity oldValue,
-					BookEntity newValue) {
-				LOG.debug(newValue + " selected");
-
-				if (newValue != null) {
-					Task<Void> backgroundTask = new Task<Void>() {
-
-						@Override
-						protected Void call() throws Exception {
-							// speaker.say(newValue.getName());
-							// resultTable.setContextMenu(initContextmenu());
-							return null;
-						}
-
-						@Override
-						protected void failed() {
-							LOG.error("Could not say name: " + newValue.getTitle(), getException());
-						}
-					};
-					new Thread(backgroundTask).start();
-				}
-			}
-		});
-
 		resultTable.setRowFactory(new Callback<TableView<BookEntity>, TableRow<BookEntity>>() {
 			@Override
 			public TableRow<BookEntity> call(TableView<BookEntity> tableView) {
@@ -195,9 +183,13 @@ public class BookSearchController {
 				removeMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 					@Override
 					public void handle(ActionEvent event) {
-						LOG.debug(resultTable.getSelectionModel().getSelectedItem().toString());
-						showMessageBox("Book Deleted!");
-						resultTable.getItems().remove(row.getItem());
+						BookEntity selectedBook = resultTable.getSelectionModel().getSelectedItem();
+						LOG.debug(selectedBook);
+						try {
+							deleteBook(selectedBook, row);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				});
 				contextMenu.getItems().add(removeMenuItem);
@@ -216,43 +208,40 @@ public class BookSearchController {
 	 *
 	 * @param event
 	 *            {@link ActionEvent} holding information about this event
+	 * @throws Exception
 	 */
 	@FXML
-	private void searchButtonAction(ActionEvent event) {
+	private void searchButtonAction(ActionEvent event) throws Exception {
 		LOG.debug("'Search' button clicked");
 
 		searchButtonAction();
 	}
 
-	private void searchButtonAction() {
-		/*
-		 * Use task to execute the potentially long running call in background
-		 * (separate thread), so that the JavaFX Application Thread is not
-		 * blocked.
-		 */
+	private void searchButtonAction() throws Exception {
+
 		Task<Collection<BookEntity>> backgroundTask = new Task<Collection<BookEntity>>() {
 
-			/**
-			 * This method will be executed in a background thread.
-			 */
 			@Override
 			protected Collection<BookEntity> call() throws Exception {
 				LOG.debug("call() called");
 
 				Collection<BookEntity> result;
-				
-				if(model.getTitle() == "" || model.getTitle() == null) {
-					result = dataProvider.findAllBooks();
-				} else {
-					result = dataProvider.findBooksByTitle(model.getTitle());
+
+				try {
+					if (model.getTitle().equals("") || model.getTitle() == null) {
+						result = dataProvider.findAllBooks();
+					} else {
+						result = dataProvider.findBooksByTitle(model.getTitle());
+					}
+
+					return result;
+
+				} catch (Exception e) {
+					LOG.debug( e);
+					throw new Exception();
+					// return null;
 				}
-				
-				LOG.debug("model.getTitle(): " + model.getTitle());
-				/*
-				 * Value returned from this method is stored as a result of task
-				 * execution.
-				 */
-				return result;
+
 			}
 
 			/**
@@ -271,30 +260,90 @@ public class BookSearchController {
 				/*
 				 * Copy the result to model.
 				 */
-				model.setResult(new ArrayList<BookEntity>(result));
+				if(result == null) {
+					model.setResult(null);
+					emptyResultTable();
+				} else {
+					model.setResult(new ArrayList<BookEntity>(result));
+					
+				}
 
 				/*
 				 * Reset sorting in the result table.
 				 */
 				resultTable.getSortOrder().clear();
 			}
+
 		};
-		
+
 		new Thread(backgroundTask).start();
+
+		exceptionHandling(backgroundTask);
 	}
 
 	@FXML
-	public void addBook() throws Exception {
+	public void addBookAction(ActionEvent event) throws Exception {
+
+		addBookAction();
+
+	}
+
+	public void addBookAction() throws Exception {
 
 		Task<Void> backgroundTask = new Task<Void>() {
 			@Override
 			public Void call() throws Exception {
-				// saveBook();
+				saveBook();
 				LOG.debug("Saving book");
 				return null;
 			}
+
+			@Override
+			protected void succeeded() {
+
+				showMessageBox("Book added!");
+			}
 		};
 		new Thread(backgroundTask).start();
+
+		exceptionHandling(backgroundTask);
+
+	}
+
+	public void saveBook() throws Exception {
+
+		Set<AuthorEntity> authors = new HashSet<>();
+		authors.add(new AuthorEntity(newAuthorFirstName.getText(), newAuthorLastName.getText()));
+		BookEntity book = new BookEntity(null, newTitle.getText());
+		book.setAuthors(authors);
+
+		dataProvider.addBook(book);
+
+		clearTextFields();
+
+	}
+
+	public void deleteBook(BookEntity book, TableRow<BookEntity> row) throws Exception {
+
+		Task<Void> backgroundTask = new Task<Void>() {
+			@Override
+			public Void call() throws Exception {
+				dataProvider.deleteBook(book);
+				LOG.debug("Deleting book");
+				return null;
+			}
+
+			@Override
+			protected void succeeded() {
+
+				showMessageBox("Book deleted!");
+				resultTable.getItems().remove(row.getItem());
+			}
+		};
+		new Thread(backgroundTask).start();
+
+		exceptionHandling(backgroundTask);
+
 	}
 
 	private void showMessageBox(String message) {
@@ -305,4 +354,24 @@ public class BookSearchController {
 		alert.showAndWait();
 	}
 
+	private void clearTextFields() {
+		newAuthorFirstName.setText("");
+		newAuthorLastName.setText("");
+		newTitle.setText("");
+	}
+
+	private void exceptionHandling(Task<?> taskName) {
+		// observe throwed exceptions
+		taskName.exceptionProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				Exception ex = (Exception) newValue;
+				ex.printStackTrace();
+				showMessageBox("Server connection problem!");
+			}
+		});
+	}
+	
+	private void emptyResultTable(){
+		resultTable.setPlaceholder(new Label(resources.getString("table.emptyText")));
+	}
 }

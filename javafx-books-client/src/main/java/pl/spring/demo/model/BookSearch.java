@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.SetProperty;
 import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleSetProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 
 /**
  * Data displayed on the person search screen.
@@ -17,7 +20,8 @@ import javafx.collections.FXCollections;
 public class BookSearch {
 
 	private final StringProperty title = new SimpleStringProperty();
-	private final StringProperty author = new SimpleStringProperty();
+	//private final StringProperty author = new SimpleStringProperty();
+	private final SetProperty<AuthorEntity> author = new SimpleSetProperty<>();
 	private final ListProperty<BookEntity> result = new SimpleListProperty<>(
 			FXCollections.observableList(new ArrayList<>()));
 
@@ -33,15 +37,15 @@ public class BookSearch {
 		return title;
 	}
 
-	public final String getAuthor() {
+	public final ObservableSet<AuthorEntity> getAuthor() {
 		return author.get();
 	}
 
-	public final void setAuthor(String value) {
+	public final void setAuthor(ObservableSet<AuthorEntity> value) {
 		author.set(value);
 	}
 
-	public StringProperty authorProperty() {
+	public SetProperty<AuthorEntity> authorProperty() {
 		return author;
 	}
 

@@ -17,6 +17,7 @@ public interface BookService {
 
     //List<BookEntity> findBooksByCriteria(BookSearchCriteria bookSearchCriteria);
 
-    BookTo saveBook(BookTo book);
-    BookEntity saveBook2(BookEntity book);
+    BookTo saveBook2(BookTo book);
+    BookEntity saveBook(BookEntity book);
+	void deleteBook(Long id);
 }

@@ -51,7 +51,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = false)
-    public BookTo saveBook(BookTo book) {
+    public BookTo saveBook2(BookTo book) {
         BookEntity entity = BookMapper.map(book);
         entity = bookRepository.save(entity);
         return BookMapper.map(entity);
@@ -65,8 +65,14 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	@Transactional(readOnly = false)
-	public BookEntity saveBook2(BookEntity book) {
+	public BookEntity saveBook(BookEntity book) {
 		return bookRepository.save(book);
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public void deleteBook(Long id) {
+		bookRepository.delete(id);
 	}
 
 	/*@Override
